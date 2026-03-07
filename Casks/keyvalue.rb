@@ -1,6 +1,6 @@
 cask "keyvalue" do
-  version "1.0.1"
-  sha256 "987ca2f43ebbc136057e50d31a978af261337c91190aecbe4afe823ced326b79"
+  version "1.0.2"
+  sha256 "01c448382ad21c8fc5a17e6ece8936952437d5aa9c8831efa4d247b651eec389"
 
   url "https://github.com/aresnasa/mac-keyvalue/releases/download/v#{version}/KeyValue-#{version}-apple-silicon.dmg"
   name "KeyValue"
@@ -41,3 +41,4 @@ cask "keyvalue" do
       xattr -cr /Applications/KeyValue.app
   EOS
 end
+
