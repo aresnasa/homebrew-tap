@@ -6,7 +6,7 @@ cask "keyvalue" do
     url "https://github.com/aresnasa/mac-keyvalue/releases/download/v#{version}/KeyValue-#{version}-apple-silicon.dmg"
   end
   on_intel do
-    sha256 "06feccc1c3bc339d197ffcae5b204c1a9c8603c3698780f7f0596d7fb4d3e0d3"
+    sha256 "e7303589451a8cfe1b5f1a537370771a9d8426262ec142f36c8eb61c3796b984"
     url "https://github.com/aresnasa/mac-keyvalue/releases/download/v#{version}/KeyValue-#{version}-intel.dmg"
   end
 
@@ -24,10 +24,15 @@ cask "keyvalue" do
   app "KeyValue.app"
 
   postflight do
+    # 1. Strip ALL extended attributes (including quarantine)
     system_command "/usr/bin/xattr",
                    args: ["-cr", "#{appdir}/KeyValue.app"],
                    sudo: false
 
+    # 2. Re-sign nested frameworks / dylibs with ad-hoc identity.
+    #    Skip .bundle dirs that are NOT real signable bundles (e.g.
+    #    swift-crypto_Crypto.bundle only contains PrivacyInfo.xcprivacy
+    #    and codesign rejects it with "bundle format unrecognized").
     Dir.glob("#{appdir}/KeyValue.app/Contents/**/*.{framework,dylib}").each do |nested|
       system_command "/usr/bin/codesign",
                      args: ["--force", "--sign", "-", "--timestamp=none", nested],
@@ -40,6 +45,11 @@ cask "keyvalue" do
                      sudo: false
     end
 
+    # 3. Re-sign the main app bundle with ad-hoc identity.
+    #    This is critical: the original ad-hoc signature from the build
+    #    machine is invalidated when Homebrew copies the .app to
+    #    /Applications.  Without re-signing, macOS 14+ / Sequoia / Tahoe
+    #    will block the app with "Apple cannot verify".
     ent = "#{appdir}/KeyValue.app/Contents/Resources/MacKeyValue-adhoc.entitlements"
     codesign_args = ["--force", "--sign", "-", "--timestamp=none"]
     codesign_args += ["--entitlements", ent] if File.exist?(ent)
@@ -48,6 +58,7 @@ cask "keyvalue" do
                    args: codesign_args,
                    sudo: false
 
+    # 4. Touch the bundle so Launch Services picks up the change
     system_command "/usr/bin/touch",
                    args: ["#{appdir}/KeyValue.app"],
                    sudo: false
