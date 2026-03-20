@@ -1,6 +1,6 @@
 cask "keyvalue" do
   version "0.1.1"
-  sha256 "cef4bfd174d60ae58a4d85ddcdde799a1cfbfa520c1ca99593171b564e07e155"
+  sha256 "b5103843392b869d99ee68cfbff5d923ced2b974e60bb9779929f380f84ded25"
 
   url "https://github.com/aresnasa/mac-keyvalue/releases/download/v#{version}/KeyValue-#{version}-apple-silicon.dmg"
   name "KeyValue"
