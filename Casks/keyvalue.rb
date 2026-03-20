@@ -2,11 +2,11 @@ cask "keyvalue" do
   version "0.1.1"
 
   on_arm do
-    sha256 "c50a8568cadbf101e8b6b0ca52c23c2644ed6511de499ff59d728bbb4d76a98c"
+    sha256 "06feccc1c3bc339d197ffcae5b204c1a9c8603c3698780f7f0596d7fb4d3e0d3"
     url "https://github.com/aresnasa/mac-keyvalue/releases/download/v#{version}/KeyValue-#{version}-apple-silicon.dmg"
   end
   on_intel do
-    sha256 "c50a8568cadbf101e8b6b0ca52c23c2644ed6511de499ff59d728bbb4d76a98c"
+    sha256 "06feccc1c3bc339d197ffcae5b204c1a9c8603c3698780f7f0596d7fb4d3e0d3"
     url "https://github.com/aresnasa/mac-keyvalue/releases/download/v#{version}/KeyValue-#{version}-intel.dmg"
   end
 
@@ -51,7 +51,7 @@ cask "keyvalue" do
     #    /Applications.  Without re-signing, macOS 14+ / Sequoia / Tahoe
     #    will block the app with "Apple cannot verify".
     ent = "#{appdir}/KeyValue.app/Contents/Resources/MacKeyValue-adhoc.entitlements"
-    codesign_args = ["--force", "--sign", "-", "--timestamp=none", "--deep"]
+    codesign_args = ["--force", "--sign", "-", "--timestamp=none"]
     codesign_args += ["--entitlements", ent] if File.exist?(ent)
     codesign_args << "#{appdir}/KeyValue.app"
     system_command "/usr/bin/codesign",
@@ -80,7 +80,7 @@ cask "keyvalue" do
 
     If macOS blocks the app after install or upgrade, run:
       xattr -cr /Applications/KeyValue.app
-      codesign --force --sign - --timestamp=none --deep /Applications/KeyValue.app
+      codesign --force --sign - --timestamp=none /Applications/KeyValue.app
   EOS
 end
 
