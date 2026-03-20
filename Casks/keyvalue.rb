@@ -1,8 +1,15 @@
 cask "keyvalue" do
   version "0.1.1"
-  sha256 "b5103843392b869d99ee68cfbff5d923ced2b974e60bb9779929f380f84ded25"
 
-  url "https://github.com/aresnasa/mac-keyvalue/releases/download/v#{version}/KeyValue-#{version}-apple-silicon.dmg"
+  on_arm do
+    sha256 "f0323b76874fa9c3f06d2f079551bc1aa7d8796119305891449485cac99e21b6"
+    url "https://github.com/aresnasa/mac-keyvalue/releases/download/v#{version}/KeyValue-#{version}-apple-silicon.dmg"
+  end
+  on_intel do
+    sha256 "f0323b76874fa9c3f06d2f079551bc1aa7d8796119305891449485cac99e21b6"
+    url "https://github.com/aresnasa/mac-keyvalue/releases/download/v#{version}/KeyValue-#{version}-intel.dmg"
+  end
+
   name "KeyValue"
   desc "K🔒V — Secure password & key-value manager for macOS"
   homepage "https://github.com/aresnasa/mac-keyvalue"
@@ -17,9 +24,34 @@ cask "keyvalue" do
   app "KeyValue.app"
 
   postflight do
-    # Remove quarantine attribute for ad-hoc signed app
+    # 1. Strip ALL extended attributes (including quarantine)
     system_command "/usr/bin/xattr",
                    args: ["-cr", "#{appdir}/KeyValue.app"],
+                   sudo: false
+
+    # 2. Re-sign nested frameworks / dylibs with ad-hoc identity
+    Dir.glob("#{appdir}/KeyValue.app/Contents/**/*.{framework,dylib,bundle}").each do |nested|
+      system_command "/usr/bin/codesign",
+                     args: ["--force", "--sign", "-", "--timestamp=none", nested],
+                     sudo: false
+    end
+
+    # 3. Re-sign the main app bundle with ad-hoc identity.
+    #    This is critical: the original ad-hoc signature from the build
+    #    machine is invalidated when Homebrew copies the .app to
+    #    /Applications.  Without re-signing, macOS 14+ / Sequoia / Tahoe
+    #    will block the app with "Apple cannot verify".
+    ent = "#{appdir}/KeyValue.app/Contents/Resources/MacKeyValue-adhoc.entitlements"
+    codesign_args = ["--force", "--sign", "-", "--timestamp=none", "--deep"]
+    codesign_args += ["--entitlements", ent] if File.exist?(ent)
+    codesign_args << "#{appdir}/KeyValue.app"
+    system_command "/usr/bin/codesign",
+                   args: codesign_args,
+                   sudo: false
+
+    # 4. Touch the bundle so Launch Services picks up the change
+    system_command "/usr/bin/touch",
+                   args: ["#{appdir}/KeyValue.app"],
                    sudo: false
   end
 
@@ -37,8 +69,9 @@ cask "keyvalue" do
 
     The app will guide you through the setup on first launch.
 
-    Since this is an ad-hoc signed open-source app, if macOS blocks it:
+    If macOS blocks the app after install or upgrade, run:
       xattr -cr /Applications/KeyValue.app
+      codesign --force --sign - --timestamp=none --deep /Applications/KeyValue.app
   EOS
 end
 
