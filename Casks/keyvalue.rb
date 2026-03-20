@@ -2,11 +2,11 @@ cask "keyvalue" do
   version "0.1.1"
 
   on_arm do
-    sha256 "13deafc9ffb5b1abc865e184cc80f6e9691eba253928b31f76060de8cfdb0259"
+    sha256 "f9d91125a0e43782fa9d4934da4cc58dce8c40acf64febd32b13fab0192ecacb"
     url "https://github.com/aresnasa/mac-keyvalue/releases/download/v#{version}/KeyValue-#{version}-apple-silicon.dmg"
   end
   on_intel do
-    sha256 "13deafc9ffb5b1abc865e184cc80f6e9691eba253928b31f76060de8cfdb0259"
+    sha256 "f9d91125a0e43782fa9d4934da4cc58dce8c40acf64febd32b13fab0192ecacb"
     url "https://github.com/aresnasa/mac-keyvalue/releases/download/v#{version}/KeyValue-#{version}-intel.dmg"
   end
 
