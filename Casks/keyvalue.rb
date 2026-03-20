@@ -2,11 +2,11 @@ cask "keyvalue" do
   version "0.1.1"
 
   on_arm do
-    sha256 "d98fdb8e885c828aead32218a1acb4e3d3b2fb5acba0c76c5fa276dbcaac48a6"
+    sha256 "c50a8568cadbf101e8b6b0ca52c23c2644ed6511de499ff59d728bbb4d76a98c"
     url "https://github.com/aresnasa/mac-keyvalue/releases/download/v#{version}/KeyValue-#{version}-apple-silicon.dmg"
   end
   on_intel do
-    sha256 "d98fdb8e885c828aead32218a1acb4e3d3b2fb5acba0c76c5fa276dbcaac48a6"
+    sha256 "c50a8568cadbf101e8b6b0ca52c23c2644ed6511de499ff59d728bbb4d76a98c"
     url "https://github.com/aresnasa/mac-keyvalue/releases/download/v#{version}/KeyValue-#{version}-intel.dmg"
   end
 
@@ -29,8 +29,17 @@ cask "keyvalue" do
                    args: ["-cr", "#{appdir}/KeyValue.app"],
                    sudo: false
 
-    # 2. Re-sign nested frameworks / dylibs with ad-hoc identity
-    Dir.glob("#{appdir}/KeyValue.app/Contents/**/*.{framework,dylib,bundle}").each do |nested|
+    # 2. Re-sign nested frameworks / dylibs with ad-hoc identity.
+    #    Skip .bundle dirs that are NOT real signable bundles (e.g.
+    #    swift-crypto_Crypto.bundle only contains PrivacyInfo.xcprivacy
+    #    and codesign rejects it with "bundle format unrecognized").
+    Dir.glob("#{appdir}/KeyValue.app/Contents/**/*.{framework,dylib}").each do |nested|
+      system_command "/usr/bin/codesign",
+                     args: ["--force", "--sign", "-", "--timestamp=none", nested],
+                     sudo: false
+    end
+    Dir.glob("#{appdir}/KeyValue.app/Contents/**/*.bundle").each do |nested|
+      next unless File.exist?(File.join(nested, "Info.plist"))
       system_command "/usr/bin/codesign",
                      args: ["--force", "--sign", "-", "--timestamp=none", nested],
                      sudo: false
