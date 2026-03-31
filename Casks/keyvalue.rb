@@ -8,7 +8,7 @@ cask "keyvalue" do
   end
 
   name "KeyValue"
-  desc "KV — Secure password & key-value manager"
+  desc "KV - Secure password & key-value manager"
   homepage "https://github.com/aresnasa/mac-keyvalue"
 
   livecheck do
