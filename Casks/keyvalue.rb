@@ -6,7 +6,7 @@ cask "keyvalue" do
     url "https://github.com/aresnasa/mac-keyvalue/releases/download/v#{version}/KeyValue-#{version}-apple-silicon.dmg"
   end
   on_intel do
-    sha256 "7657773c03c2eca1e06a74477b0cae1df45593585917428f88c00333d261e0a4"
+    sha256 "948050d922507a2d3f43e523aa9ecc540beacd56e053fd69ffbb24b24fc07456"
     url "https://github.com/aresnasa/mac-keyvalue/releases/download/v#{version}/KeyValue-#{version}-intel.dmg"
   end
 
