@@ -2,16 +2,13 @@ cask "keyvalue" do
   version "0.1.1"
 
   on_arm do
-    sha256 "7657773c03c2eca1e06a74477b0cae1df45593585917428f88c00333d261e0a4"
-    url "https://github.com/aresnasa/mac-keyvalue/releases/download/v#{version}/KeyValue-#{version}-apple-silicon.dmg"
-  end
-  on_intel do
     sha256 "948050d922507a2d3f43e523aa9ecc540beacd56e053fd69ffbb24b24fc07456"
-    url "https://github.com/aresnasa/mac-keyvalue/releases/download/v#{version}/KeyValue-#{version}-intel.dmg"
+
+    url "https://github.com/aresnasa/mac-keyvalue/releases/download/v#{version}/KeyValue-#{version}-apple-silicon.dmg"
   end
 
   name "KeyValue"
-  desc "K🔒V — Secure password & key-value manager"
+  desc "KV — Secure password & key-value manager"
   homepage "https://github.com/aresnasa/mac-keyvalue"
 
   livecheck do
@@ -24,15 +21,14 @@ cask "keyvalue" do
   app "KeyValue.app"
 
   postflight do
-    # 1. Strip ALL extended attributes (including quarantine)
+    # 1. Strip extended attributes (removes quarantine flag)
     system_command "/usr/bin/xattr",
                    args: ["-cr", "#{appdir}/KeyValue.app"],
                    sudo: false
 
     # 2. Re-sign nested frameworks / dylibs with ad-hoc identity.
-    #    Skip .bundle dirs that are NOT real signable bundles (e.g.
-    #    swift-crypto_Crypto.bundle only contains PrivacyInfo.xcprivacy
-    #    and codesign rejects it with "bundle format unrecognized").
+    #    Skip .bundle dirs that lack Info.plist (not real signable bundles,
+    #    e.g. swift-crypto_Crypto.bundle only contains PrivacyInfo.xcprivacy).
     Dir.glob("#{appdir}/KeyValue.app/Contents/**/*.{framework,dylib}").each do |nested|
       system_command "/usr/bin/codesign",
                      args: ["--force", "--sign", "-", "--timestamp=none", nested],
@@ -40,16 +36,15 @@ cask "keyvalue" do
     end
     Dir.glob("#{appdir}/KeyValue.app/Contents/**/*.bundle").each do |nested|
       next unless File.exist?(File.join(nested, "Info.plist"))
+
       system_command "/usr/bin/codesign",
                      args: ["--force", "--sign", "-", "--timestamp=none", nested],
                      sudo: false
     end
 
-    # 3. Re-sign the main app bundle with ad-hoc identity.
-    #    This is critical: the original ad-hoc signature from the build
-    #    machine is invalidated when Homebrew copies the .app to
-    #    /Applications.  Without re-signing, macOS 14+ / Sequoia / Tahoe
-    #    will block the app with "Apple cannot verify".
+    # 3. Re-sign the main app bundle with ad-hoc identity + entitlements.
+    #    The build-machine signature is invalidated when Homebrew copies the
+    #    .app; without re-signing macOS 14+ / Sequoia blocks the app.
     ent = "#{appdir}/KeyValue.app/Contents/Resources/MacKeyValue-adhoc.entitlements"
     codesign_args = ["--force", "--sign", "-", "--timestamp=none"]
     codesign_args += ["--entitlements", ent] if File.exist?(ent)
@@ -58,7 +53,7 @@ cask "keyvalue" do
                    args: codesign_args,
                    sudo: false
 
-    # 4. Touch the bundle so Launch Services picks up the change
+    # 4. Touch the bundle so Launch Services picks up the new signature.
     system_command "/usr/bin/touch",
                    args: ["#{appdir}/KeyValue.app"],
                    sudo: false
@@ -66,8 +61,8 @@ cask "keyvalue" do
 
   zap trash: [
     "~/Library/Application Support/com.aresnasa.mackeyvalue",
-    "~/Library/Preferences/com.aresnasa.mackeyvalue.plist",
     "~/Library/Caches/com.aresnasa.mackeyvalue",
+    "~/Library/Preferences/com.aresnasa.mackeyvalue.plist",
   ]
 
   caveats <<~EOS
@@ -83,4 +78,3 @@ cask "keyvalue" do
       codesign --force --sign - --timestamp=none /Applications/KeyValue.app
   EOS
 end
-
