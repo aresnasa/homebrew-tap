@@ -3,15 +3,17 @@ cask "keyvalue" do
 
   on_arm do
     sha256 "f9d91125a0e43782fa9d4934da4cc58dce8c40acf64febd32b13fab0192ecacb"
+
     url "https://github.com/aresnasa/mac-keyvalue/releases/download/v#{version}/KeyValue-#{version}-apple-silicon.dmg"
   end
   on_intel do
     sha256 "f9d91125a0e43782fa9d4934da4cc58dce8c40acf64febd32b13fab0192ecacb"
+
     url "https://github.com/aresnasa/mac-keyvalue/releases/download/v#{version}/KeyValue-#{version}-intel.dmg"
   end
 
   name "KeyValue"
-  desc "K🔒V — Secure password & key-value manager for macOS"
+  desc "KV — Secure password & key-value manager"
   homepage "https://github.com/aresnasa/mac-keyvalue"
 
   livecheck do
@@ -40,6 +42,7 @@ cask "keyvalue" do
     end
     Dir.glob("#{appdir}/KeyValue.app/Contents/**/*.bundle").each do |nested|
       next unless File.exist?(File.join(nested, "Info.plist"))
+
       system_command "/usr/bin/codesign",
                      args: ["--force", "--sign", "-", "--timestamp=none", nested],
                      sudo: false
@@ -66,8 +69,8 @@ cask "keyvalue" do
 
   zap trash: [
     "~/Library/Application Support/com.aresnasa.mackeyvalue",
-    "~/Library/Preferences/com.aresnasa.mackeyvalue.plist",
     "~/Library/Caches/com.aresnasa.mackeyvalue",
+    "~/Library/Preferences/com.aresnasa.mackeyvalue.plist",
   ]
 
   caveats <<~EOS
@@ -83,4 +86,3 @@ cask "keyvalue" do
       codesign --force --sign - --timestamp=none /Applications/KeyValue.app
   EOS
 end
-
