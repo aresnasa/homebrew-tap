@@ -1,8 +1,12 @@
 cask "keyvalue" do
-  version "0.1.2"
-  sha256 "71d7c7eaadfa2cdc3058ed2b14d1bc6904c86307703e052144718ee6da30b83d"
+  version "1.1.3"
 
-  url "https://github.com/aresnasa/mac-keyvalue/releases/download/v#{version}/KeyValue-#{version}-universal.dmg"
+  on_arm do
+    sha256 "332b33c87f8a5b95bee76b0195315dd4881c0232bb7aa32cbfa76212557746a7"
+
+    url "https://github.com/aresnasa/mac-keyvalue/releases/download/v#{version}/KeyValue-#{version}-apple-silicon.dmg"
+  end
+
   name "KeyValue"
   desc "KV - Secure password & key-value manager"
   homepage "https://github.com/aresnasa/mac-keyvalue"
