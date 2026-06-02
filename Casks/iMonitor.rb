@@ -1,8 +1,8 @@
 cask "imonitor" do
   version "0.3.0"
-  sha256 "901804ba84b1766a1c902df8fd922dd810cf8abe6a3addeca6100a98f88df365"
+  sha256 "f86c10d144eacf8a4f0cdf954d5bfacfb60ebb23353e60a7457fc56f083f36b2"
 
-  url "https://github.com/aresnasa/iMonitor/releases/download/v#{version}/iMonitor-v#{version}.zip"
+  url "https://github.com/aresnasa/iMonitor/releases/download/v0.3.0/iMonitor-v0.3.0.zip"
   name "iMonitor"
   desc "macOS menu bar system monitor - CPU, Memory, GPU, Network"
   homepage "https://github.com/aresnasa/iMonitor"
