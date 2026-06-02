@@ -8,16 +8,14 @@ class Imonitor < Formula
   depends_on :macos => :big_sur
 
   def install
-    app_path = "#{staged_path}/#{APP_NAME}.app"
-    # Install the .app into /Applications
-    prefix.install "#{APP_NAME}.app"
+    prefix.install "iMonitor.app"
   end
 
   def caveats
     <<~EOS
-      iMonitor has been installed to #{prefix}/#{APP_NAME}.app
+      iMonitor has been installed to #{prefix}/iMonitor.app
       You may want to move it to /Applications manually:
-        mv #{prefix}/#{APP_NAME}.app /Applications/
+        mv #{prefix}/iMonitor.app /Applications/
     EOS
   end
 end
