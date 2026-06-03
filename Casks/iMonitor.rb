@@ -1,8 +1,8 @@
 cask "imonitor" do
-  version "0.4.1"
-  sha256 "42e0353060d04426d908ff5b389469756f73bce1bf0560f45e6078d0b9d35896"
+  version "0.3.1"
+  sha256 "84b0d2952d14809a57976a009a92d6ac3c37d289a6ed14d0ee23e18a5d215fa5"
 
-  url "https://github.com/aresnasa/iMonitor/releases/download/v#{version}/iMonitor-#{version}.dmg"
+  url "https://github.com/aresnasa/iMonitor/releases/download/v#{version}/iMonitor-0.3.1.dmg"
   name "iMonitor"
   desc "macOS menu bar system monitor – CPU, Memory, GPU, Network"
   homepage "https://github.com/aresnasa/iMonitor"
@@ -12,17 +12,17 @@ cask "imonitor" do
     strategy :github_latest
   end
 
-  depends_on macos: ">= :big_sur"
+  depends_on macos: :big_sur
 
   app "iMonitor.app"
 
   postflight do
-    # Strip extended attributes (removes quarantine flag)
+    # 1. Strip extended attributes (removes quarantine flag)
     system_command "/usr/bin/xattr",
                    args: ["-cr", "#{appdir}/iMonitor.app"],
                    sudo: false
 
-    # Re-sign nested frameworks / dylibs with ad-hoc identity.
+    # 2. Re-sign nested frameworks / dylibs with ad-hoc identity.
     Dir.glob("#{appdir}/iMonitor.app/Contents/**/*.{framework,dylib}").each do |nested|
       system_command "/usr/bin/codesign",
                      args: ["--force", "--sign", "-", "--timestamp=none", nested],
@@ -36,14 +36,18 @@ cask "imonitor" do
                      sudo: false
     end
 
-    # Re-sign the main app with ad-hoc identity (no entitlements).
-    # The build-machine signature is invalidated when Homebrew copies
-    # the .app; without re-signing macOS blocks the app.
+    # 3. Re-sign the main app bundle with ad-hoc identity + entitlements.
+    #    The build-machine signature is invalidated when Homebrew copies the
+    #    .app; without re-signing macOS 14+ / Sequoia blocks the app.
+    ent = "#{appdir}/iMonitor.app/Contents/Resources/iMonitor-adhoc.entitlements"
+    codesign_args = ["--force", "--sign", "-", "--timestamp=none"]
+    codesign_args += ["--entitlements", ent] if File.exist?(ent)
+    codesign_args << "#{appdir}/iMonitor.app"
     system_command "/usr/bin/codesign",
-                   args: ["--force", "--sign", "-", "--timestamp=none", "#{appdir}/iMonitor.app"],
+                   args: codesign_args,
                    sudo: false
 
-    # Touch the bundle so Launch Services picks up the new signature.
+    # 4. Touch the bundle so Launch Services picks up the new signature.
     system_command "/usr/bin/touch",
                    args: ["#{appdir}/iMonitor.app"],
                    sudo: false
