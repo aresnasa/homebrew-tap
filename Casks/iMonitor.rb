@@ -1,6 +1,6 @@
 cask "imonitor" do
-  version "0.4.0"
-  sha256 "2b0ecd6ec0df1e494a8ed353f173978d8d2770ebd15b5aa46137268df26cd2ba"
+  version "0.4.1"
+  sha256 "42e0353060d04426d908ff5b389469756f73bce1bf0560f45e6078d0b9d35896"
 
   url "https://github.com/aresnasa/iMonitor/releases/download/v#{version}/iMonitor-#{version}.dmg"
   name "iMonitor"
@@ -17,10 +17,12 @@ cask "imonitor" do
   app "iMonitor.app"
 
   postflight do
+    # Strip extended attributes (removes quarantine flag)
     system_command "/usr/bin/xattr",
                    args: ["-cr", "#{appdir}/iMonitor.app"],
                    sudo: false
 
+    # Re-sign nested frameworks / dylibs with ad-hoc identity.
     Dir.glob("#{appdir}/iMonitor.app/Contents/**/*.{framework,dylib}").each do |nested|
       system_command "/usr/bin/codesign",
                      args: ["--force", "--sign", "-", "--timestamp=none", nested],
@@ -34,14 +36,14 @@ cask "imonitor" do
                      sudo: false
     end
 
-    ent = "#{appdir}/iMonitor.app/Contents/Resources/iMonitor-adhoc.entitlements"
-    codesign_args = ["--force", "--sign", "-", "--timestamp=none"]
-    codesign_args += ["--entitlements", ent] if File.exist?(ent)
-    codesign_args << "#{appdir}/iMonitor.app"
+    # Re-sign the main app with ad-hoc identity (no entitlements).
+    # The build-machine signature is invalidated when Homebrew copies
+    # the .app; without re-signing macOS blocks the app.
     system_command "/usr/bin/codesign",
-                   args: codesign_args,
+                   args: ["--force", "--sign", "-", "--timestamp=none", "#{appdir}/iMonitor.app"],
                    sudo: false
 
+    # Touch the bundle so Launch Services picks up the new signature.
     system_command "/usr/bin/touch",
                    args: ["#{appdir}/iMonitor.app"],
                    sudo: false
