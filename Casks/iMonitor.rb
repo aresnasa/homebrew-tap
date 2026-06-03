@@ -1,10 +1,10 @@
 cask "imonitor" do
-  version "0.3.1"
-  sha256 "84b0d2952d14809a57976a009a92d6ac3c37d289a6ed14d0ee23e18a5d215fa5"
+  version "0.4.2"
+  sha256 "229d87e0b36ff31b09f9fb2deaa7d598c666c1c96c14e852e3ea38eba670f9b3"
 
-  url "https://github.com/aresnasa/iMonitor/releases/download/v#{version}/iMonitor-0.3.1.dmg"
+  url "https://github.com/aresnasa/iMonitor/releases/download/v#{version}/iMonitor-#{version}.dmg"
   name "iMonitor"
-  desc "macOS menu bar system monitor – CPU, Memory, GPU, Network"
+  desc "Menu bar system monitor – CPU, Memory, GPU, Network"
   homepage "https://github.com/aresnasa/iMonitor"
 
   livecheck do
