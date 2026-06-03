@@ -1,6 +1,6 @@
 cask "imonitor" do
-  version "0.3.1"
-  sha256 "54d50b1047b4405ed931ca91cb0f0288e4a47a33087c4cbe4f24e7cb800fd76b"
+  version "0.4.0"
+  sha256 "2b0ecd6ec0df1e494a8ed353f173978d8d2770ebd15b5aa46137268df26cd2ba"
 
   url "https://github.com/aresnasa/iMonitor/releases/download/v#{version}/iMonitor-#{version}.dmg"
   name "iMonitor"
@@ -51,10 +51,4 @@ cask "imonitor" do
     "~/Library/Caches/com.aresnasa.iMonitor",
     "~/Library/Preferences/com.aresnasa.iMonitor.plist",
   ]
-
-  caveats <<~EOS
-    If macOS blocks the app after install or upgrade, run:
-      xattr -cr /Applications/iMonitor.app
-      codesign --force --sign - --timestamp=none /Applications/iMonitor.app
-  EOS
 end
