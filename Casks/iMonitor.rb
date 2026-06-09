@@ -1,8 +1,8 @@
 cask "imonitor" do
-  version "0.5.3"
-  sha256 "8657d5218c54482964ffc6f707c5113b3e5ef3bebcb36c3513789763f8c2927e"
+  version "0.5.4"
+  sha256 "b56afd32005ff4eb6bad68016d0b146330f619de781e0ab73a7d8b6cb2adc066"
 
-  url "https://github.com/aresnasa/iMonitor/releases/download/v#{version}/iMonitor-0.5.3.dmg"
+  url "https://github.com/aresnasa/iMonitor/releases/download/v#{version}/iMonitor-0.5.4.dmg"
   name "iMonitor"
   desc "Menu bar system monitor – CPU, Memory, GPU, Network"
   homepage "https://github.com/aresnasa/iMonitor"
@@ -12,7 +12,7 @@ cask "imonitor" do
     strategy :github_latest
   end
 
-  depends_on macos: :ventura
+  depends_on macos: :big_sur
 
   app "iMonitor.app"
 
