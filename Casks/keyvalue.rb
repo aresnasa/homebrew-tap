@@ -1,6 +1,6 @@
 cask "keyvalue" do
-  version "0.1.5"
-  sha256 "1aa33e361f64b08f49be6a7de2ab5b874c191d3bb8a6f69270312d950cc7825b"
+  version "0.1.6"
+  sha256 "fc87cbe00d59201dd4674bb6dd3f175c1daaa3e57ad1056357782a2eba51a165"
 
   url "https://github.com/aresnasa/mac-keyvalue/releases/download/v#{version}/KeyValue-#{version}-universal.dmg"
   name "KeyValue"
@@ -12,7 +12,7 @@ cask "keyvalue" do
     strategy :github_latest
   end
 
-  depends_on macos: ">= :ventura"
+  depends_on macos: :ventura
 
   app "KeyValue.app"
 
