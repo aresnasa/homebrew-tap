@@ -1,8 +1,8 @@
 cask "imonitor" do
-  version "0.5.8"
-  sha256 "bd1fe82b8e889ea3196d34ddce9772ef3b02d444ab52b37ab4233fea377c2967"
+  version "0.5.9"
+  sha256 "198bf265e54d242ec435ba33ef11a4a739cdfec4970a7a0cce265e2541151a3f"
 
-  url "https://github.com/aresnasa/iMonitor/releases/download/v#{version}/iMonitor-0.5.8.dmg"
+  url "https://github.com/aresnasa/iMonitor/releases/download/v#{version}/iMonitor-0.5.9.dmg"
   name "iMonitor"
   desc "Menu bar system monitor – CPU, Memory, GPU, Network"
   homepage "https://github.com/aresnasa/iMonitor"
