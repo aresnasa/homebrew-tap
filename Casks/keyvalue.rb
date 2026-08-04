@@ -1,6 +1,6 @@
 cask "keyvalue" do
-  version "0.1.7"
-  sha256 "f040c0f712340465b3c50334c955c237b4f2668a6d1f95ad9802d3d448f79986"
+  version "0.1.8"
+  sha256 "47fd283cc61bd9cd9652f72bb2d35218f918b8336993406071277c0fb46574c2"
 
   url "https://github.com/aresnasa/mac-keyvalue/releases/download/v#{version}/KeyValue-#{version}-universal.dmg"
   name "KeyValue"
