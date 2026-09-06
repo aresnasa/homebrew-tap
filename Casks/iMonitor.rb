@@ -1,8 +1,8 @@
 cask "imonitor" do
-  version "0.5.9"
-  sha256 "198bf265e54d242ec435ba33ef11a4a739cdfec4970a7a0cce265e2541151a3f"
+  version "0.5.10"
+  sha256 "ac5ee2804c1d2b336f187f273a89720d3e25b8a08832175cf097f0b87d15b7de"
 
-  url "https://github.com/aresnasa/iMonitor/releases/download/v#{version}/iMonitor-0.5.9.dmg"
+  url "https://github.com/aresnasa/iMonitor/releases/download/v#{version}/iMonitor-#{version}.dmg"
   name "iMonitor"
   desc "Menu bar system monitor – CPU, Memory, GPU, Network"
   homepage "https://github.com/aresnasa/iMonitor"
@@ -16,41 +16,37 @@ cask "imonitor" do
 
   app "iMonitor.app"
 
-  postflight do
-    # 1. Strip extended attributes (removes quarantine flag)
-    system_command "/usr/bin/xattr",
-                   args: ["-cr", "#{appdir}/iMonitor.app"],
-                   sudo: false
+  postflight_steps do
+    run "/bin/zsh",
+        args: ["-c", <<~SH]
+          app="{{appdir}}/iMonitor.app"
 
-    # 2. Re-sign nested frameworks / dylibs with ad-hoc identity.
-    Dir.glob("#{appdir}/iMonitor.app/Contents/**/*.{framework,dylib}").each do |nested|
-      system_command "/usr/bin/codesign",
-                     args: ["--force", "--sign", "-", "--timestamp=none", nested],
-                     sudo: false
-    end
-    Dir.glob("#{appdir}/iMonitor.app/Contents/**/*.bundle").each do |nested|
-      next unless File.exist?(File.join(nested, "Info.plist"))
+          # 1. Strip extended attributes (removes quarantine flag)
+          /usr/bin/xattr -cr "$app"
 
-      system_command "/usr/bin/codesign",
-                     args: ["--force", "--sign", "-", "--timestamp=none", nested],
-                     sudo: false
-    end
+          # 2. Re-sign nested frameworks / dylibs / bundles with ad-hoc identity.
+          #    Skip .bundle dirs that lack Info.plist (not real signable bundles).
+          for nested in "$app"/Contents/**/*.framework(N) "$app"/Contents/**/*.dylib(N); do
+            /usr/bin/codesign --force --sign - --timestamp=none "$nested"
+          done
+          for nested in "$app"/Contents/**/*.bundle(N); do
+            [[ -f "$nested/Info.plist" ]] || continue
+            /usr/bin/codesign --force --sign - --timestamp=none "$nested"
+          done
 
-    # 3. Re-sign the main app bundle with ad-hoc identity + entitlements.
-    #    The build-machine signature is invalidated when Homebrew copies the
-    #    .app; without re-signing macOS 14+ / Sequoia blocks the app.
-    ent = "#{appdir}/iMonitor.app/Contents/Resources/iMonitor-adhoc.entitlements"
-    codesign_args = ["--force", "--sign", "-", "--timestamp=none"]
-    codesign_args += ["--entitlements", ent] if File.exist?(ent)
-    codesign_args << "#{appdir}/iMonitor.app"
-    system_command "/usr/bin/codesign",
-                   args: codesign_args,
-                   sudo: false
+          # 3. Re-sign the main app bundle with ad-hoc identity + entitlements.
+          #    The build-machine signature is invalidated when Homebrew copies the
+          #    .app; without re-signing macOS 14+ / Sequoia blocks the app.
+          ent="$app/Contents/Resources/iMonitor-adhoc.entitlements"
+          if [[ -f "$ent" ]]; then
+            /usr/bin/codesign --force --sign - --timestamp=none --entitlements "$ent" "$app"
+          else
+            /usr/bin/codesign --force --sign - --timestamp=none "$app"
+          fi
 
-    # 4. Touch the bundle so Launch Services picks up the new signature.
-    system_command "/usr/bin/touch",
-                   args: ["#{appdir}/iMonitor.app"],
-                   sudo: false
+          # 4. Touch the bundle so Launch Services picks up the new signature.
+          /usr/bin/touch "$app"
+        SH
   end
 
   zap trash: [
