@@ -16,43 +16,38 @@ cask "keyvalue" do
 
   app "KeyValue.app"
 
-  postflight do
-    # 1. Strip extended attributes (removes quarantine flag)
-    system_command "/usr/bin/xattr",
-                   args: ["-cr", "#{appdir}/KeyValue.app"],
-                   sudo: false
+  postflight_steps do
+    run "/bin/zsh",
+        args: ["-c", <<~SH]
+          app="{{appdir}}/KeyValue.app"
 
-    # 2. Re-sign nested frameworks / dylibs with ad-hoc identity.
-    #    Skip .bundle dirs that lack Info.plist (not real signable bundles,
-    #    e.g. swift-crypto_Crypto.bundle only contains PrivacyInfo.xcprivacy).
-    Dir.glob("#{appdir}/KeyValue.app/Contents/**/*.{framework,dylib}").each do |nested|
-      system_command "/usr/bin/codesign",
-                     args: ["--force", "--sign", "-", "--timestamp=none", nested],
-                     sudo: false
-    end
-    Dir.glob("#{appdir}/KeyValue.app/Contents/**/*.bundle").each do |nested|
-      next unless File.exist?(File.join(nested, "Info.plist"))
+          # 1. Strip extended attributes (removes quarantine flag)
+          /usr/bin/xattr -cr "$app"
 
-      system_command "/usr/bin/codesign",
-                     args: ["--force", "--sign", "-", "--timestamp=none", nested],
-                     sudo: false
-    end
+          # 2. Re-sign nested frameworks / dylibs / bundles with ad-hoc identity.
+          #    Skip .bundle dirs that lack Info.plist (not real signable bundles,
+          #    e.g. swift-crypto_Crypto.bundle only contains PrivacyInfo.xcprivacy).
+          for nested in "$app"/Contents/**/*.framework(N) "$app"/Contents/**/*.dylib(N); do
+            /usr/bin/codesign --force --sign - --timestamp=none "$nested"
+          done
+          for nested in "$app"/Contents/**/*.bundle(N); do
+            [[ -f "$nested/Info.plist" ]] || continue
+            /usr/bin/codesign --force --sign - --timestamp=none "$nested"
+          done
 
-    # 3. Re-sign the main app bundle with ad-hoc identity + entitlements.
-    #    The build-machine signature is invalidated when Homebrew copies the
-    #    .app; without re-signing macOS 14+ / Sequoia blocks the app.
-    ent = "#{appdir}/KeyValue.app/Contents/Resources/MacKeyValue-adhoc.entitlements"
-    codesign_args = ["--force", "--sign", "-", "--timestamp=none"]
-    codesign_args += ["--entitlements", ent] if File.exist?(ent)
-    codesign_args << "#{appdir}/KeyValue.app"
-    system_command "/usr/bin/codesign",
-                   args: codesign_args,
-                   sudo: false
+          # 3. Re-sign the main app bundle with ad-hoc identity + entitlements.
+          #    The build-machine signature is invalidated when Homebrew copies the
+          #    .app; without re-signing macOS 14+ / Sequoia blocks the app.
+          ent="$app/Contents/Resources/MacKeyValue-adhoc.entitlements"
+          if [[ -f "$ent" ]]; then
+            /usr/bin/codesign --force --sign - --timestamp=none --entitlements "$ent" "$app"
+          else
+            /usr/bin/codesign --force --sign - --timestamp=none "$app"
+          fi
 
-    # 4. Touch the bundle so Launch Services picks up the new signature.
-    system_command "/usr/bin/touch",
-                   args: ["#{appdir}/KeyValue.app"],
-                   sudo: false
+          # 4. Touch the bundle so Launch Services picks up the new signature.
+          /usr/bin/touch "$app"
+        SH
   end
 
   zap trash: [
