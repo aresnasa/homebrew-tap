@@ -1,6 +1,6 @@
 cask "imonitor" do
-  version "0.5.10"
-  sha256 "902d4eab0075dbbb724b285b97ab87fa06206e6b0841824d0a1fcc2d00f8261e"
+  version "0.5.11"
+  sha256 "0a757d4d9e354ae4f651ccbe73d5a25d5ddd622c304f9b75c4f2c8217dedee31"
 
   url "https://github.com/aresnasa/iMonitor/releases/download/v#{version}/iMonitor-#{version}.dmg"
   name "iMonitor"
@@ -12,7 +12,7 @@ cask "imonitor" do
     strategy :github_latest
   end
 
-  depends_on macos: :big_sur
+  depends_on macos: :monterey
 
   app "iMonitor.app"
 
