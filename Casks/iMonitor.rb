@@ -1,6 +1,6 @@
 cask "imonitor" do
-  version "0.5.11"
-  sha256 "2aaecc319780e223d6fe1192da5153533216b4042f3f2f6418544b9a2b1c6ee7"
+  version "0.5.12"
+  sha256 "99806722c590eb49920486f7432646efbd5c682479071e7c17478514f9321e32"
 
   url "https://github.com/aresnasa/iMonitor/releases/download/v#{version}/iMonitor-#{version}.dmg"
   name "iMonitor"
